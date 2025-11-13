@@ -3,7 +3,11 @@ name: Release lib-version
 on:
   push:
     tags:
-      - 'v*'   # e.g. v1.0.0
+      - 'v*'   
+      
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   publish:
