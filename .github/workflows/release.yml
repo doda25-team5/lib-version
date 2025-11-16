@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v*'   
-      
+
 permissions:
   contents: read
   packages: write
@@ -22,9 +22,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'maven'
+          server-id: github   
+          settings-path: ${{ github.workspace }}
+
+      - name: Build
+        run: mvn -B package -DskipTests
 
       - name: Publish to GitHub Packages
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mvn -B -s .github/maven-settings.xml deploy -DskipTests
+        run: mvn -B deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests
+        env: GITHUB_TOKEN: ${{ github.token }}
+  
