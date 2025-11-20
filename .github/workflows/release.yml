@@ -39,7 +39,7 @@ jobs:
             target/lib-version-1.0.1.jar
             pom.xml
 
-      - name: Publish to GitHub Packages
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: mvn -B deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests
+      # - name: Publish to GitHub Packages
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #   run: mvn -B deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests
