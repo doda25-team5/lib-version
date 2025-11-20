@@ -1,11 +1,16 @@
-name: Build lib-version
+name: Release lib-version
 
 on:
   push:
-    branches: [try]
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,12 +22,22 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'maven'
+          server-id: github
+          settings-path: ${{ github.workspace }}
 
-      - name: Build lib-version
+      - name: Build
         run: mvn -B package -DskipTests
 
-      - name: Upload built JAR as artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lib-version-jar
-          path: target/lib-version-*.jar
+          name: lib-version
+          path: |
+            target/lib-version-1.0.1.jar
+            pom.xml
+            
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: mvn -B deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests
