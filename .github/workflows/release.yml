@@ -2,6 +2,8 @@ name: Release lib-version
 
 on:
   push:
+    branches:
+      - try
     tags:
       - 'v*'
 
@@ -36,7 +38,7 @@ jobs:
           path: |
             target/lib-version-1.0.1.jar
             pom.xml
-            
+
       - name: Publish to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ github.token }}
