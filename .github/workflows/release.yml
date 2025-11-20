@@ -1,10 +1,9 @@
 name: Release lib-version
 
 on:
-  branch: ["try"]
-  # push:
-  #   tags:
-  #     - 'v*'   
+  push:
+    branches:
+      - try
 
 permissions:
   contents: read
