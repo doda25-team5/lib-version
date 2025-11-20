@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- <groupId>org.example</groupId> -->
-    <groupId>com.github.doda25-team5</groupId>
+    <groupId>doda25.team5</groupId>
     <artifactId>lib-version</artifactId>
     <version>1.0.1</version>
 

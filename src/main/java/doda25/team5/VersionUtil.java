@@ -1,4 +1,4 @@
-package com.github.doda25_team5;
+package doda25.team5;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
