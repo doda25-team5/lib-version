@@ -3,6 +3,7 @@ name: Release lib-version
 on:
   push:
     branches:
+      - main
       - try
     tags:
       - 'v*'
@@ -30,16 +31,7 @@ jobs:
 
       - name: Build
         run: mvn -B package -DskipTests
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: lib-version
-          path: |
-            target/lib-version-1.0.1.jar
-            pom.xml
-
-      # - name: Publish to GitHub Packages
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
-      #   run: mvn -B deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn -B deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests
