@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: f11
+          ref: main
 
       - name: Extract version from tag
         id: version
