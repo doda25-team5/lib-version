@@ -3,7 +3,7 @@ name: Release lib-version
 on:
   push:
     tags:
-      - 'v*'   
+      - "v*"
 
 permissions:
   contents: read
@@ -17,20 +17,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Set up Java for publishing
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'maven'
-          server-id: github   
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          server-id: github                 
+          server-username: GITHUB_ACTOR    
+          server-password: MAVEN_TOKEN      
           settings-path: ${{ github.workspace }}
 
-      - name: Build
-        run: mvn -B package -DskipTests
-
-      - name: Publish to GitHub Packages
-        env: 
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: Build & Publish
         run: mvn -B deploy -s $GITHUB_WORKSPACE/settings.xml -DskipTests
-  
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          MAVEN_TOKEN: ${{ secrets.MAVEN_DEPLOY_TOKEN }}
