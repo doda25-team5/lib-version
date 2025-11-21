@@ -2,8 +2,6 @@ name: Release lib-version
 
 on:
   push:
-    branches:
-      - try
     tags:
       - 'v*'   
 
