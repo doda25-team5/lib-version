@@ -1,0 +1,53 @@
+name: Pre-Release (lib-version)
+
+on:
+  push:
+    branches:
+      - "**"
+    tags-ignore:
+      - "v*"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  prerelease:
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read current version from pom.xml
+        run: |
+          VER=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          BASE=${VER%-SNAPSHOT}
+          echo "BASE=$BASE" >> $GITHUB_ENV
+
+      - name: Compute branch name
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          SAFE_BRANCH=$(echo "$BRANCH" | tr '/' '-')
+          echo "BRANCH=$SAFE_BRANCH" >> $GITHUB_ENV
+
+      - name: Compute timestamp
+        run: echo "TS=$(date +'%y%m%d-%H%M%S')" >> $GITHUB_ENV
+
+      - name: Set temporary pre-release version
+        run: |
+          NEW_VERSION="${BASE}-${BRANCH}-${TS}"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          mvn -B versions:set -DnewVersion=${NEW_VERSION}
+          mvn -B versions:commit
+
+      - name: Deploy pre-release
+        run: mvn -B -s settings.xml deploy -DskipTests
+
+      - name: Revert pom.xml
+        run: git checkout pom.xml

@@ -1,0 +1,57 @@
+name: Stable Release (lib-version)
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          RAW="${GITHUB_REF#refs/tags/v}"
+          echo "VERSION=$RAW" >> $GITHUB_ENV
+
+      - name: Set release version in pom.xml
+        run: |
+          mvn -B versions:set -DnewVersion=${VERSION}
+          mvn -B versions:commit
+
+      - name: Deploy stable version
+        run: |
+          mvn -B -s settings.xml deploy -DskipTests
+
+      - name: Bump to next SNAPSHOT version
+        run: |
+          IFS='.' read MAJOR MINOR PATCH <<< "${VERSION}"
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_SNAPSHOT="${MAJOR}.${MINOR}.${NEXT_PATCH}-SNAPSHOT"
+          echo "NEXT_SNAPSHOT=$NEXT_SNAPSHOT" >> $GITHUB_ENV
+          mvn -B versions:set -DnewVersion=${NEXT_SNAPSHOT}
+          mvn -B versions:commit
+
+      - name: Commit and push new SNAPSHOT
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add pom.xml
+          git commit -m "Bump version to ${NEXT_SNAPSHOT}"
+          git push
