@@ -2,8 +2,8 @@ name: Stable Release (lib-version)
 
 on:
   push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -11,6 +11,8 @@ permissions:
 
 jobs:
   release:
+    # Loop Prevention: Do not run if the commit was made by this workflow
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
 
     env:
@@ -24,34 +26,57 @@ jobs:
           fetch-depth: 0
           ref: main
 
-      - name: Extract version from tag
-        id: version
+      - name: Configure Git user
         run: |
-          RAW="${GITHUB_REF#refs/tags/v}"
-          echo "VERSION=$RAW" >> $GITHUB_ENV
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-      - name: Set release version in pom.xml
+      - name: Prepare Release Version
         run: |
-          mvn -B versions:set -DnewVersion=${VERSION}
+          # 1. Get current version from pom.xml
+          CURRENT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Current version: $CURRENT"
+
+          # 2. Guard Clause: Only release if it is a SNAPSHOT
+          if [[ "$CURRENT" != *"-SNAPSHOT" ]]; then
+            echo "Not a SNAPSHOT version. Skipping release."
+            exit 0
+          fi
+
+          # 3. Strip -SNAPSHOT to get the Stable Version
+          RELEASE_VERSION=${CURRENT%-SNAPSHOT}
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+
+          # 4. Update pom.xml to stable version
+          mvn -B versions:set -DnewVersion=$RELEASE_VERSION
           mvn -B versions:commit
 
+          # 5. Commit and Tag the Release
+          git add pom.xml
+          git commit -m "Release v$RELEASE_VERSION [skip ci]"
+          git tag "v$RELEASE_VERSION"
+
       - name: Deploy stable version
+        # Preserved original authentication method
         run: |
           mvn -B -s settings.xml deploy -DskipTests
 
       - name: Bump to next SNAPSHOT version
         run: |
-          IFS='.' read MAJOR MINOR PATCH <<< "${VERSION}"
+          # 1. Calculate next patch version
+          IFS='.' read MAJOR MINOR PATCH <<< "${RELEASE_VERSION}"
           NEXT_PATCH=$((PATCH + 1))
           NEXT_SNAPSHOT="${MAJOR}.${MINOR}.${NEXT_PATCH}-SNAPSHOT"
           echo "NEXT_SNAPSHOT=$NEXT_SNAPSHOT" >> $GITHUB_ENV
+
+          # 2. Update pom.xml to new SNAPSHOT
           mvn -B versions:set -DnewVersion=${NEXT_SNAPSHOT}
           mvn -B versions:commit
 
       - name: Commit and push new SNAPSHOT
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
           git add pom.xml
-          git commit -m "Bump version to ${NEXT_SNAPSHOT}"
-          git push
+          git commit -m "Bump version to ${NEXT_SNAPSHOT} [skip ci]"
+          
+          # Push the commits AND the tag created earlier
+          git push origin main --follow-tags
