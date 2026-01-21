@@ -21,6 +21,7 @@ public final class VersionUtil {
                 if (cachedVersion == null) {
                     cachedVersion = loadVersion();
                 }
+            
                 v = cachedVersion;
             }
         }
