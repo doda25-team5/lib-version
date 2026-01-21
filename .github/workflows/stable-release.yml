@@ -55,7 +55,9 @@ jobs:
           git add pom.xml
           git commit -m "Release v$RELEASE_VERSION [skip ci]"
           git tag "v$RELEASE_VERSION"
-
+          git push origin HEAD
+          git push origin "v$RELEASE_VERSION"
+          
       - name: Deploy stable version
         # Preserved original authentication method
         run: |
