@@ -8,7 +8,8 @@ public final class VersionUtil {
 
     public static String getVersion() {
         Package pkg = VersionUtil.class.getPackage();
-        String version = (pkg == null) ? null : pkg.getImplementationVersion(); # check JAR manifest
+        // check JAR manifest for version
+        String version = (pkg == null) ? null : pkg.getImplementationVersion();
         return (version == null || version.isBlank()) ? "unknown" : version;
     }
 
