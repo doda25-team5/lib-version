@@ -79,4 +79,4 @@ jobs:
           git commit -m "Bump version to ${NEXT_SNAPSHOT} [skip ci]"
           
           # Push the commits AND the tag created earlier
-          git push origin main --follow-tags
+          git push origin main --follow-tags ->
