@@ -1,52 +1,19 @@
 package com.github.doda25_team5;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
 public final class VersionUtil {
-
-    private static final String VERSION_RESOURCE = "/version.txt";
-    private static volatile String cachedVersion;
 
     private VersionUtil() {
         // utility class
     }
 
-
-    // Retrieve library version
     public static String getVersion() {
-        String v = cachedVersion;
-        if (v == null) {
-            synchronized (VersionUtil.class) {
-                if (cachedVersion == null) {
-                    cachedVersion = loadVersion();
-                }
-            //  
-                v = cachedVersion;
-            }
-        }
-        return v;
+        Package pkg = VersionUtil.class.getPackage();
+        // check JAR manifest for version
+        String version = (pkg == null) ? null : pkg.getImplementationVersion();
+        return (version == null || version.isBlank()) ? "unknown" : version;
     }
 
-    private static String loadVersion() {
-        // Read from JAR manifest metadata
-        Package pkg = VersionUtil.class.getPackage();
-        if (pkg != null) {
-            String impl = pkg.getImplementationVersion();
-            if (impl != null && !impl.isEmpty()) {
-                return impl;
-            }
-        }
-
-        // Read from resource file 
-        try (InputStream in = VersionUtil.class.getResourceAsStream(VERSION_RESOURCE)) {
-            if (in == null) {
-                return "UNKNOWN";
-            }
-            String content = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim();
-            return content.isEmpty() ? "UNKNOWN" : content;
-        } catch (Exception e) {
-            return "UNKNOWN";
-        }
+    public static void printVersion() {
+        System.out.println("lib-version = " + getVersion());
     }
 }
