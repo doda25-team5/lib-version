@@ -3,7 +3,7 @@
     <!-- <groupId>org.example</groupId> -->
     <groupId>com.github.doda25-team5</groupId>
     <artifactId>lib-version</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>1.0.5</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
